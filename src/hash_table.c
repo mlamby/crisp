@@ -115,7 +115,7 @@ static uint32_t hash_string(const char *key, size_t length)
   // FNV-1a algorithm taken directly from
   // https://craftinginterpreters.com/hash-tables.html
   uint32_t hash = 2166136261u;
-  for (int i = 0; i < length; i++)
+  for (size_t i = 0; i < length; i++)
   {
     hash ^= (uint8_t)key[i];
     hash *= 16777619;
@@ -158,7 +158,7 @@ static void increase_capacity(hash_table_t *table, size_t new_capacity)
 
 static void increase_capacity_if_required(hash_table_t *table)
 {
-  if ((table->size + 1) > (size_t)(table->capacity * sLoadFactor))
+  if ((table->size + 1) > (size_t)((float)table->capacity * sLoadFactor))
   {
     size_t new_capacity = table->capacity * sCapacityMultiplier;
     if (new_capacity < sMinCapacity)

@@ -29,7 +29,7 @@ struct value_t
   } as;
 };
 
-inline bool is_value_type(value_t const *const value, value_type_t t)
+static inline bool is_value_type(value_t const *const value, value_type_t t)
 {
   return (value != NULL) && (value->type == t);
 }
@@ -54,12 +54,12 @@ value_t *atom_value(crisp_t* crisp, const char *chars, size_t length);
 value_t *atom_value_null_terminated(crisp_t* crisp, const char *chars);
 
 value_t *cons(value_t *car, value_t *cdr);
-inline value_t *car(value_t *cons)
+static inline value_t *car(value_t *cons)
 {
   return cons->as.cons.car;
 }
 
-inline value_t *cdr(value_t *cons)
+static inline value_t *cdr(value_t *cons)
 {
   return cons->as.cons.cdr;
 }

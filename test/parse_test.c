@@ -11,8 +11,7 @@
 int test_parse(const char* src, const char* expected, const char* file_name, int line, bool expect_parse_fail)
 {
   crisp_t* crisp = init_interpreter();
-  FILE* fp = NULL;
-  fopen_s(&fp, "parse_test_output.txt", "wb");
+  FILE* fp = fopen("parse_test_output.txt", "wb");
   expr_t v = parse(crisp, src);
   print_value_to_fp(v, fp);
   fclose(fp);
@@ -43,9 +42,9 @@ int test_parse(const char* src, const char* expected, const char* file_name, int
     }
   }
 
-  fopen_s(&fp, "parse_test_output.txt", "rb");
+  fp = fopen("parse_test_output.txt", "rb");
   fseek(fp, 0, SEEK_END);
-  long fsize = ftell(fp);
+  size_t fsize = (size_t)ftell(fp);
   fseek(fp, 0, SEEK_SET);
 
   char *output = malloc(fsize + 1);

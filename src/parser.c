@@ -224,11 +224,11 @@ static void errorAt(crisp_t *crisp, token_t *token, const char *message)
   }
   else if (token->type == TOKEN_ERROR)
   {
-    fprintf(stderr, " - '%.*s'", token->length, token->start);
+    fprintf(stderr, " - '%.*s'", (int32_t)token->length, token->start);
   }
   else
   {
-    fprintf(stderr, " at '%.*s'", token->length, token->start);
+    fprintf(stderr, " at '%.*s'", (int32_t)token->length, token->start);
   }
 
   fprintf(stderr, ": %s\n", message);

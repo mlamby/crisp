@@ -189,7 +189,7 @@ static token_t make_token(token_type_t type)
   token_t token;
   token.type = type;
   token.start = scanner.start;
-  token.length = (int)(scanner.current - scanner.start);
+  token.length = (size_t)(scanner.current - scanner.start);
   token.line = scanner.line;
   return token;
 }
@@ -199,7 +199,7 @@ static token_t error_token(const char *message)
   token_t token;
   token.type = TOKEN_ERROR;
   token.start = message;
-  token.length = (int)strlen(message);
+  token.length = (size_t)strlen(message);
   token.line = scanner.line;
   return token;
 }
@@ -208,12 +208,6 @@ static char advance()
 {
   char current = *(scanner.current);
   ++scanner.current;
-  return current;
-}
-
-static char current()
-{
-  char current = *(scanner.current);
   return current;
 }
 

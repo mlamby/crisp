@@ -19,7 +19,7 @@ struct crisp_t
 };
 
 static void env_init(env_t* env);
-static void env_free(env_t* env);
+//static void env_free(env_t* env);
 
 crisp_t* init_interpreter()
 {
@@ -81,7 +81,7 @@ static void env_init(env_t* env)
   string_table_init(&env->table);
 }
 
-static void env_free(env_t* env)
-{
-  (void)env;
-}
+// static void env_free(env_t* env)
+// {
+//   (void)env;
+// }
