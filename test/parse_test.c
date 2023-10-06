@@ -48,7 +48,7 @@ int test_parse(const char* src, const char* expected, const char* file_name, int
   fseek(fp, 0, SEEK_SET);
 
   char *output = malloc(fsize + 1);
-  if(fread(output, fsize, 1, fp) != fsize)
+  if(fread(output, fsize, 1, fp) != 1)
   {
     printf("fread error\n");
     return FAIL_CODE;
