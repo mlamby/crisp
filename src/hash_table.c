@@ -41,15 +41,19 @@ bool hash_table_set(hash_table_t *table, const char *key, VALUE_TYPE value)
       key,
       false);
 
-  bool new_key = (e->key == NULL);
-
-  if (new_key)
+  bool new_key = false;
+  if (e != NULL)
   {
-    e->key = key;
-    ++table->size;
-  }
+    new_key = (e->key == NULL);
 
-  e->value = value;
+    if (new_key)
+    {
+      e->key = key;
+      ++table->size;
+    }
+
+    e->value = value;
+  }
 
   return new_key;
 }
