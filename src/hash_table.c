@@ -100,18 +100,24 @@ const char *string_table_store(hash_table_t *table, const char *chars, size_t le
       chars,
       true);
 
-  if (e->key == NULL)
+  const char *result = NULL;
+
+  if (e != NULL)
   {
-    char *heapChars = ALLOCATE(char, length + 1);
-    memcpy(heapChars, chars, length);
-    heapChars[length] = '\0';
-    e->key = heapChars;
-    ++table->size;
+    if (e->key == NULL)
+    {
+      char *heapChars = ALLOCATE(char, length + 1);
+      memcpy(heapChars, chars, length);
+      heapChars[length] = '\0';
+      e->key = heapChars;
+      ++table->size;
+    }
+
+    e->value = NULL;
+    result = e->key;
   }
 
-  e->value = NULL;
-
-  return e->key;
+  return result;
 }
 
 static uint32_t hash_string(const char *key, size_t length)
