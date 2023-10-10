@@ -1,11 +1,13 @@
 add_library(crisp_lib
   common.h
   value.h value.c
+  environment.h environment.c
   memory.h memory.c
   hash_table.h hash_table.c
   scanner.c scanner.h
   parser.c parser.h
   symbols.c symbols.h
+  builtins.c builtins.h
   interpreter.c interpreter.h)
 
 target_include_directories(crisp_lib

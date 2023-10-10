@@ -4,22 +4,20 @@
 #include "parser.h"
 #include "value.h"
 #include "symbols.h"
+#include "environment.h"
+#include "builtins.h"
 
-typedef struct env_t env_t;
-struct env_t
-{
-  hash_table_t table;
-};
+#include <stdarg.h>
 
 struct crisp_t
 {
   hash_table_t string_table;
-  symbol_state_t symbols;
+  symbols_t symbols;
   env_t root_env;
 };
 
-static void env_init(env_t* env);
-//static void env_free(env_t* env);
+static expr_t apply(crisp_t* crisp, expr_t operator, expr_t operands);
+static expr_t resolve_atom(crisp_t* crisp, expr_t node, env_t* env);
 
 crisp_t* init_interpreter()
 {
@@ -27,6 +25,7 @@ crisp_t* init_interpreter()
   string_table_init(&crisp->string_table);
   reserved_symbols_init(crisp, &crisp->symbols);
   env_init(&crisp->root_env);
+  register_builtins(crisp);
   return crisp;
 }
 
@@ -44,25 +43,57 @@ expr_t read(crisp_t* crisp, const char* source)
   return parse(crisp, source);
 }
 
-expr_t eval(crisp_t* crisp, expr_t node)
+expr_t eval(crisp_t* crisp, expr_t node, env_t* env)
 {
   (void)crisp;
 
   if(node == NULL)
-    return nil_value();
+    return NULL;
 
   if(is_bool(node) || is_string(node) || is_number(node) || is_nil(node))
     return node;
 
   if(is_atom(node))
-    return nil_value();
+  {
+    return resolve_atom(crisp, node, env);  
+  }
+
+  if(is_cons(node))
+  {
+    if(as_bool(b_is_list(crisp, node)))
+    {
+      return apply(crisp, eval(crisp, car(node), env), car(cdr(node)));
+    }
+    else
+    {
+      crisp_error(crisp, "Invalid list");
+      return NULL;
+    }
+  }
     
   return node;
 }
 
+static expr_t apply(crisp_t* crisp, expr_t operator, expr_t operands)
+{
+  if(is_fn(operator))
+  {
+    return as_fn(operator)(crisp, operands);
+  }
+
+  crisp_error(crisp, "Can not apply a non function");
+  return NULL;
+}
+
+env_t* root_env(crisp_t* crisp)
+{
+  return &crisp->root_env;
+}
+
 const char* intern_string(crisp_t* crisp, const char* str, size_t length)
 {
-  return string_table_store(&crisp->string_table, str, length);
+  const char* result = string_table_store(&crisp->string_table, str, length);
+  return result;
 }
 
 const char* intern_string_null_terminated(crisp_t* crisp, const char* str)
@@ -70,18 +101,25 @@ const char* intern_string_null_terminated(crisp_t* crisp, const char* str)
   return intern_string(crisp, str, strlen(str));
 }
 
-env_t* root_environment(crisp_t* env)
+void crisp_error(crisp_t* crisp, const char* fmt, ...)
 {
-  (void)env;
-  return NULL;
+  (void)crisp;
+  printf("CrispError: ");
+  va_list args;
+  va_start(args, fmt);
+  vprintf(fmt, args);
+  printf("\n");
 }
 
-static void env_init(env_t* env)
+static expr_t resolve_atom(crisp_t* crisp, expr_t node, env_t* env)
 {
-  string_table_init(&env->table);
+  expr_t value;
+  const char* name = as_atom(node);
+  if(!env_get(env, name, &value))
+  {
+    crisp_error(crisp, "Failed to resolve atom: <%p>%s", name, name);
+    dump_env(env);
+    return NULL;
+  }
+  return value;
 }
-
-// static void env_free(env_t* env)
-// {
-//   (void)env;
-// }

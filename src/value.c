@@ -48,6 +48,13 @@ value_t *atom_value_null_terminated(crisp_t* crisp, const char *chars)
   return atom_value(crisp, chars, strlen(chars));
 }
 
+value_t *fn_value(fn_ptr_t ptr)
+{
+  value_t *value = allocate_value(VALUE_TYPE_FN);
+  value->as.fn_ptr = ptr;
+  return value;
+}
+
 value_t *cons(value_t *car, value_t *cdr)
 {
   value_t *value = allocate_value(VALUE_TYPE_CONS);
@@ -76,7 +83,9 @@ void print_value(value_t *value)
 void print_value_to_fp(value_t *value, FILE* fp)
 {
   if (value == NULL)
+  {
     return;
+  }
 
   if (is_nil(value))
   {
@@ -100,6 +109,10 @@ void print_value_to_fp(value_t *value, FILE* fp)
   else if(is_atom(value))
   {
     fprintf(fp, "%s", as_atom(value));
+  }
+  else if(is_fn(value))
+  {
+    fprintf(fp, "<builtin>");
   }
   else if(is_cons(value))
   {

@@ -3,18 +3,10 @@
 
 #include "common.h"
 
-typedef enum {
-  SYMBOL_QUOTE,
-
-  SYMBOL_MAX_COUNT
-} symbol_name_t;
-
 typedef struct {
-  const char* reserved_symbols[SYMBOL_MAX_COUNT];
-} symbol_state_t;
+  const char* quote;
+} symbols_t;
 
-void reserved_symbols_init(crisp_t* crisp, symbol_state_t* state);
-
-bool is_named_keyword(symbol_state_t* state, const char* name, symbol_name_t symbol);
+void reserved_symbols_init(crisp_t* crisp, symbols_t* state);
 
 #endif //CRISP_SYMBOLS_H

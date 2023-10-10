@@ -2,6 +2,7 @@
 #include "memory.h"
 
 #include <string.h>
+#include <stdio.h>
 
 static const float sLoadFactor = 0.75;
 static const size_t sMinCapacity = 8;
@@ -10,8 +11,13 @@ static const size_t sCapacityMultiplier = 2;
 static uint32_t hash_string(const char *key, size_t length);
 static void increase_capacity(hash_table_t *table, size_t new_capacity);
 static void increase_capacity_if_required(hash_table_t *table);
-static hash_table_entry_t *find_entry(hash_table_entry_t *entries, size_t capacity, const char *key, bool compare_string_contents);
-static bool key_match(const char *key1, const char *key2, bool compare_string_contents);
+static hash_table_entry_t *find_entry(
+  hash_table_entry_t *entries,
+  size_t capacity,
+  const char *key,
+  bool compare_string_contents,
+  size_t key_len);
+static bool key_match(const char *key1, const char *key2, bool compare_string_contents, size_t key_len);
 
 void hash_table_init(hash_table_t *table)
 {
@@ -39,7 +45,8 @@ bool hash_table_set(hash_table_t *table, const char *key, VALUE_TYPE value)
       table->entries,
       table->capacity,
       key,
-      false);
+      false,
+      0);
 
   bool new_key = false;
   if (e != NULL)
@@ -64,7 +71,8 @@ bool hash_table_get(hash_table_t *table, const char *key, VALUE_TYPE *value)
       table->entries,
       table->capacity,
       key,
-      false);
+      false,
+      0);
 
   bool found_key = (e != NULL) && (e->key != NULL);
   if (found_key)
@@ -98,7 +106,8 @@ const char *string_table_store(hash_table_t *table, const char *chars, size_t le
       table->entries,
       table->capacity,
       chars,
-      true);
+      true,
+      length);
 
   const char *result = NULL;
 
@@ -118,6 +127,18 @@ const char *string_table_store(hash_table_t *table, const char *chars, size_t le
   }
 
   return result;
+}
+
+void hash_table_dump_keys(hash_table_t *table)
+{
+  for (size_t i = 0; i < table->capacity; ++i)
+  {
+    hash_table_entry_t *e = &(table->entries[i]);
+    if (NULL != e->key)
+    {
+      printf("[idx:%zu] <%p>'%s'\n", i, e->key, e->key);
+    }
+  }
 }
 
 static uint32_t hash_string(const char *key, size_t length)
@@ -151,7 +172,8 @@ static void increase_capacity(hash_table_t *table, size_t new_capacity)
           new_list,
           new_capacity,
           old_entry->key,
-          table->is_string_table);
+          table->is_string_table,
+          0);
 
       new_slot->key = old_entry->key;
       new_slot->value = old_entry->value;
@@ -183,14 +205,19 @@ static hash_table_entry_t *find_entry(
     hash_table_entry_t *entries,
     size_t capacity,
     const char *key,
-    bool compare_string_contents)
+    bool compare_string_contents,
+    size_t key_len)
 {
   if ((entries == NULL) || (capacity == 0))
   {
     return NULL;
   }
 
-  uint32_t hash = hash_string(key, strlen(key));
+  if(key_len == 0)
+  {
+    key_len = strlen(key);
+  }
+  uint32_t hash = hash_string(key, key_len);
   size_t index = hash % capacity;
 
   bool searching = true;
@@ -201,7 +228,7 @@ static hash_table_entry_t *find_entry(
     hash_table_entry_t *e = &(entries[index]);
     if (e->key != NULL)
     {
-      if (key_match(e->key, key, compare_string_contents))
+      if (key_match(e->key, key, compare_string_contents, key_len))
       {
         // The key is already in the table.
         found_entry = e;
@@ -224,11 +251,11 @@ static hash_table_entry_t *find_entry(
   return found_entry;
 }
 
-static bool key_match(const char *key1, const char *key2, bool compare_string_contents)
+static bool key_match(const char *key1, const char *key2, bool compare_string_contents, size_t key_len)
 {
   if (compare_string_contents)
   {
-    return (strcmp(key1, key2) == 0);
+    return (strncmp(key1, key2, key_len) == 0);
   }
   return key1 == key2;
 }

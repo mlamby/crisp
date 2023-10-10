@@ -25,4 +25,13 @@
     return FAIL_CODE;                                               \
   }
 
+#define RUN_TEST_WITH_FIXTURE(fn) {                                 \
+  test_fixture_t fixture;                                           \
+  setup(&fixture);                                                  \
+  if(fn(&fixture) != PASS_CODE) {                                   \
+    teardown(&fixture);                                             \
+    return FAIL_CODE;                                               \
+  }                                                                 \
+  teardown(&fixture);}
+
 #endif

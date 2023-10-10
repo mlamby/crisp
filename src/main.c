@@ -17,7 +17,7 @@ static void repl()
 
     if (fgets(line, sizeof(line), stdin))
     {
-      print_value(eval(crisp, read(crisp, line)));
+      print_value(eval(crisp, read(crisp, line), root_env(crisp)));
     }
     else
     {

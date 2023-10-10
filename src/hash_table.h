@@ -29,4 +29,6 @@ void string_table_init(hash_table_t *table);
 void string_table_free(hash_table_t* table);
 const char* string_table_store(hash_table_t* table, const char* chars, size_t length);
 
+void hash_table_dump_keys(hash_table_t* table);
+
 #endif
