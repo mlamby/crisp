@@ -6,9 +6,10 @@ add_library(crisp_lib
   hash_table.h hash_table.c
   scanner.c scanner.h
   parser.c parser.h
-  symbols.c symbols.h
   builtins.c builtins.h
-  interpreter.c interpreter.h)
+  evaluator.c evaluator.h
+  interpreter.c interpreter.h
+  value_support.c value_support.h)
 
 target_include_directories(crisp_lib
   PUBLIC .)

@@ -14,7 +14,7 @@ typedef enum
   VALUE_TYPE_FN,
 } value_type_t;
 
-typedef expr_t(*fn_ptr_t)(crisp_t*, expr_t);
+typedef expr_t(*fn_ptr_t)(crisp_t*, expr_t, env_t*);
 
 struct value_t
 {

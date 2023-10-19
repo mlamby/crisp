@@ -2,28 +2,26 @@
 #include "hash_table.h"
 #include "memory.h"
 #include "parser.h"
-#include "value.h"
-#include "symbols.h"
 #include "environment.h"
+#include "evaluator.h"
 #include "builtins.h"
+#include "value.h"
 
 #include <stdarg.h>
+#include <setjmp.h>
+
+static jmp_buf sJumpBuffer;
 
 struct crisp_t
 {
   hash_table_t string_table;
-  symbols_t symbols;
   env_t root_env;
 };
-
-static expr_t apply(crisp_t* crisp, expr_t operator, expr_t operands);
-static expr_t resolve_atom(crisp_t* crisp, expr_t node, env_t* env);
 
 crisp_t* init_interpreter()
 {
   crisp_t* crisp = ALLOCATE(crisp_t, 1);
   string_table_init(&crisp->string_table);
-  reserved_symbols_init(crisp, &crisp->symbols);
   env_init(&crisp->root_env);
   register_builtins(crisp);
   return crisp;
@@ -34,6 +32,7 @@ void free_interpreter(crisp_t* crisp)
   if(crisp != NULL)
   {
     string_table_free(&crisp->string_table);
+    env_free(&crisp->root_env);
     FREE(crisp_t, crisp);
   }
 }
@@ -45,44 +44,30 @@ expr_t read(crisp_t* crisp, const char* source)
 
 expr_t eval(crisp_t* crisp, expr_t node, env_t* env)
 {
-  (void)crisp;
+  return crisp_eval(crisp, node, env);
+}
 
-  if(node == NULL)
-    return NULL;
+void repl(crisp_t* crisp)
+{
+  char line[1024];
 
-  if(is_bool(node) || is_string(node) || is_number(node) || is_nil(node))
-    return node;
+  // Control will return here if there is an error.
+  setjmp(sJumpBuffer);
 
-  if(is_atom(node))
+  // Run the REPL loop
+  while (true)
   {
-    return resolve_atom(crisp, node, env);  
-  }
+    printf("\n> ");
 
-  if(is_cons(node))
-  {
-    if(as_bool(b_is_list(crisp, node)))
+    if (fgets(line, sizeof(line), stdin))
     {
-      return apply(crisp, eval(crisp, car(node), env), car(cdr(node)));
+      print_value(eval(crisp, read(crisp, line), root_env(crisp)));
     }
     else
     {
-      crisp_error(crisp, "Invalid list");
-      return NULL;
+      break;
     }
   }
-    
-  return node;
-}
-
-static expr_t apply(crisp_t* crisp, expr_t operator, expr_t operands)
-{
-  if(is_fn(operator))
-  {
-    return as_fn(operator)(crisp, operands);
-  }
-
-  crisp_error(crisp, "Can not apply a non function");
-  return NULL;
 }
 
 env_t* root_env(crisp_t* crisp)
@@ -101,25 +86,8 @@ const char* intern_string_null_terminated(crisp_t* crisp, const char* str)
   return intern_string(crisp, str, strlen(str));
 }
 
-void crisp_error(crisp_t* crisp, const char* fmt, ...)
+void crisp_error_jump(crisp_t* crisp, crisp_error_t err)
 {
   (void)crisp;
-  printf("CrispError: ");
-  va_list args;
-  va_start(args, fmt);
-  vprintf(fmt, args);
-  printf("\n");
-}
-
-static expr_t resolve_atom(crisp_t* crisp, expr_t node, env_t* env)
-{
-  expr_t value;
-  const char* name = as_atom(node);
-  if(!env_get(env, name, &value))
-  {
-    crisp_error(crisp, "Failed to resolve atom: <%p>%s", name, name);
-    dump_env(env);
-    return NULL;
-  }
-  return value;
+  longjmp(sJumpBuffer, (int)err);
 }
