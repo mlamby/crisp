@@ -18,6 +18,7 @@ size_t length(expr_t value);
 
 // List iteration functions
 list_iter_t iter_list(crisp_t *crisp, expr_t lst);
+// Will return null if no more items are in the list.
 expr_t iter_next(list_iter_t *i);
 
 #endif

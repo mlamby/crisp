@@ -17,6 +17,13 @@
     return NULL;                              \
   }
 
+#define CHECK_ARITY(c, ops, sz)                         \
+  size_t len = length(ops);                             \
+  if (len != sz) {                                      \
+    printf("Expected arity of %u, got %zu\n", sz, len); \
+    crisp_eval_error(crisp, "Arity");                   \
+  }
+
 expr_t b_quote(crisp_t *crisp, expr_t operands, env_t *env)
 {
   (void)crisp;
@@ -76,38 +83,36 @@ static expr_t b_div(crisp_t *crisp, expr_t operands, env_t *env)
 static expr_t b_cons(crisp_t *crisp, expr_t operands, env_t *env)
 {
   expr_t ops = crisp_eval_list(crisp, operands, env);
-  EVAL_ASSERT(crisp, (length(ops) == 2), "Expected arity of 2");
+  CHECK_ARITY(crisp, ops, 2U);
   return cons(car(ops), car(cdr(ops)));
 }
 
 static expr_t b_car(crisp_t *crisp, expr_t operands, env_t *env)
 {
   expr_t ops = crisp_eval_list(crisp, operands, env);
-  EVAL_ASSERT(crisp, (length(ops) == 1), "Expected arity of 1");
+  CHECK_ARITY(crisp, ops, 1U);
   expr_t op = car(ops);
-  EVAL_ASSERT(crisp, pair(op), "Argument must be a pair");
+  CHECK_OPERAND(crisp, pair(op), op, "must be a pair");
   return car(op);
 }
 
 static expr_t b_cdr(crisp_t *crisp, expr_t operands, env_t *env)
 {
   expr_t ops = crisp_eval_list(crisp, operands, env);
-  EVAL_ASSERT(crisp, (length(ops) == 1), "Expected arity of 1");
+  CHECK_ARITY(crisp, ops, 1U);
   expr_t op = car(ops);
-  EVAL_ASSERT(crisp, pair(op), "Argument must be a pair");
+  CHECK_OPERAND(crisp, pair(op), op, "must be a pair");
   return cdr(op);
 }
 
 static expr_t b_length(crisp_t *crisp, expr_t operands, env_t *env)
 {
   expr_t ops = crisp_eval_list(crisp, operands, env);
-
-  EVAL_ASSERT(crisp, is_nil(cdr(ops)), "Only one argument should be passed");
+  CHECK_ARITY(crisp, ops, 1U);
   ops = car(ops);
 
   if(is_nil(ops)) return number_value(0.0);
-
-  EVAL_ASSERT(crisp, pair(ops), "Operand must be a list");
+  CHECK_OPERAND(crisp, pair(ops), ops, "must be a list");
 
   return number_value((double)length(ops));
 }
