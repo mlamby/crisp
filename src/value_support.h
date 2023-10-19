@@ -10,7 +10,7 @@ typedef struct
   size_t index;
 } list_iter_t;
 
-static inline bool not(expr_t value) { return is_nil(value); }
+static inline bool not(expr_t value) { return is_bool(value) && !as_bool(value); }
 static inline bool pair(expr_t value) { return is_cons(value); }
 
 bool is_list(expr_t value);

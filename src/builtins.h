@@ -5,5 +5,4 @@
 
 void register_builtins(crisp_t* crisp);
 
-
 #endif

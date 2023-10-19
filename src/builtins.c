@@ -24,6 +24,12 @@
     crisp_eval_error(crisp, "Arity");                   \
   }
 
+static expr_t eval_first_operand(crisp_t *crisp, expr_t operands, env_t *env)
+{
+  CHECK_ARITY(crisp, operands, 1U);
+  return crisp_eval(crisp, car(operands), env);
+}
+
 expr_t b_quote(crisp_t *crisp, expr_t operands, env_t *env)
 {
   (void)crisp;
@@ -89,18 +95,14 @@ static expr_t b_cons(crisp_t *crisp, expr_t operands, env_t *env)
 
 static expr_t b_car(crisp_t *crisp, expr_t operands, env_t *env)
 {
-  expr_t ops = crisp_eval_list(crisp, operands, env);
-  CHECK_ARITY(crisp, ops, 1U);
-  expr_t op = car(ops);
+  expr_t op = eval_first_operand(crisp, operands, env);
   CHECK_OPERAND(crisp, pair(op), op, "must be a pair");
   return car(op);
 }
 
 static expr_t b_cdr(crisp_t *crisp, expr_t operands, env_t *env)
 {
-  expr_t ops = crisp_eval_list(crisp, operands, env);
-  CHECK_ARITY(crisp, ops, 1U);
-  expr_t op = car(ops);
+  expr_t op = eval_first_operand(crisp, operands, env);
   CHECK_OPERAND(crisp, pair(op), op, "must be a pair");
   return cdr(op);
 }
@@ -119,8 +121,32 @@ static expr_t b_length(crisp_t *crisp, expr_t operands, env_t *env)
 
 static expr_t b_is_list(crisp_t *crisp, expr_t operands, env_t *env)
 {
-  expr_t ops = crisp_eval_list(crisp, operands, env);
-  return bool_value(is_list(car(ops)));
+  return bool_value(is_list(eval_first_operand(crisp, operands, env)));
+}
+
+static expr_t b_not(crisp_t *crisp, expr_t operands, env_t *env)
+{
+  return bool_value(not(eval_first_operand(crisp, operands, env)));
+}
+
+static expr_t b_boolean(crisp_t *crisp, expr_t operands, env_t *env)
+{
+  return bool_value(is_bool(eval_first_operand(crisp, operands, env)));
+}
+
+static expr_t b_symbol(crisp_t *crisp, expr_t operands, env_t *env)
+{
+  return bool_value(is_atom(eval_first_operand(crisp, operands, env)));
+}
+
+static expr_t b_number(crisp_t *crisp, expr_t operands, env_t *env)
+{
+  return bool_value(is_number(eval_first_operand(crisp, operands, env)));
+}
+
+static expr_t b_string(crisp_t *crisp, expr_t operands, env_t *env)
+{
+  return bool_value(is_string(eval_first_operand(crisp, operands, env)));
 }
 
 void register_builtins(crisp_t *crisp)
@@ -136,4 +162,9 @@ void register_builtins(crisp_t *crisp)
   env_set(env, intern(crisp, "cdr"), fn_value(&b_cdr));
   env_set(env, intern(crisp, "length"), fn_value(&b_length));
   env_set(env, intern(crisp, "list?"), fn_value(&b_is_list));
+  env_set(env, intern(crisp, "not"), fn_value(&b_not));
+  env_set(env, intern(crisp, "boolean?"), fn_value(&b_boolean));
+  env_set(env, intern(crisp, "symbol?"), fn_value(&b_symbol));
+  env_set(env, intern(crisp, "number?"), fn_value(&b_number));
+  env_set(env, intern(crisp, "string?"), fn_value(&b_string));
 }
