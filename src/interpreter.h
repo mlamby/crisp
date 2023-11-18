@@ -4,10 +4,10 @@
 #include "common.h"
 
 typedef enum { 
-    ERROR_NONE,
-    ERROR_SCAN,
-    ERROR_PARSE,
-    ERROR_EVAL,
+    CRISP_ERROR_NONE = 0,
+    CRISP_ERROR_SCAN,
+    CRISP_ERROR_PARSE,
+    CRISP_ERROR_EVAL,
 } crisp_error_t;
 
 crisp_t* init_interpreter();

@@ -44,15 +44,17 @@ expr_t read(crisp_t* crisp, const char* source)
 
 expr_t eval(crisp_t* crisp, expr_t node, env_t* env)
 {
-  return crisp_eval(crisp, node, env);
+  expr_t result = NULL;
+  if(setjmp(sJumpBuffer) == CRISP_ERROR_NONE)
+  {
+    result = crisp_eval(crisp, node, env);
+  }
+  return result;
 }
 
 void repl(crisp_t* crisp)
 {
   char line[1024];
-
-  // Control will return here if there is an error.
-  setjmp(sJumpBuffer);
 
   // Run the REPL loop
   while (true)
@@ -89,5 +91,8 @@ const char* intern_string_null_terminated(crisp_t* crisp, const char* str)
 void crisp_error_jump(crisp_t* crisp, crisp_error_t err)
 {
   (void)crisp;
-  longjmp(sJumpBuffer, (int)err);
+  if(err != CRISP_ERROR_NONE)
+  {
+    longjmp(sJumpBuffer, (int)err);
+  }
 }

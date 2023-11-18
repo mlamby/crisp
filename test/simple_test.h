@@ -1,6 +1,8 @@
 #ifndef SIMPLE_TEST_H
 #define SIMPLE_TEST_H
 
+#include "common.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -35,3 +37,12 @@
   teardown(&fixture);}
 
 #endif
+
+int execute_crisp_code(
+  const char* src, 
+  const char* expected, 
+  const char* file_name, 
+  int line, 
+  bool expect_parse_fail,
+  bool run_eval,
+  bool expect_eval_fail);

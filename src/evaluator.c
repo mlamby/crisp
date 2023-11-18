@@ -30,7 +30,7 @@ expr_t crisp_eval(crisp_t *crisp, expr_t node, env_t *env)
   {
     if (is_list(node))
     {
-      return apply(crisp, eval(crisp, car(node), env), cdr(node), env);
+      return apply(crisp, crisp_eval(crisp, car(node), env), cdr(node), env);
     }
     else
     {
@@ -50,7 +50,7 @@ expr_t crisp_eval_list(crisp_t *crisp, expr_t list_node, env_t *env)
   }
 
   return cons(
-    eval(crisp, car(list_node), env),
+    crisp_eval(crisp, car(list_node), env),
     crisp_eval_list(crisp, cdr(list_node), env));
 }
 
@@ -63,7 +63,7 @@ void crisp_eval_error(crisp_t* crisp, const char* fmt, ...)
   vprintf(fmt, args);
   va_end(args);
   printf("\n");
-  crisp_error_jump(crisp, ERROR_EVAL);
+  crisp_error_jump(crisp, CRISP_ERROR_EVAL);
 }
 
 static expr_t apply(crisp_t *crisp, expr_t operator, expr_t operands, env_t *env)

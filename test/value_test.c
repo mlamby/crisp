@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     TEST_ASSERT(is_cons(v) == false);
     TEST_ASSERT(is_fn(v) == false);
     TEST_ASSERT(as_bool(v) == false);
-    TEST_ASSERT(not(v) == false);
+    TEST_ASSERT(not(v) == true);
     TEST_ASSERT(pair(v) == false);
     TEST_ASSERT(is_list(v) == false);
     free_value(v);
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     TEST_ASSERT(is_atom(v) == false);
     TEST_ASSERT(is_cons(v) == false);
     TEST_ASSERT(is_fn(v) == false);
-    TEST_ASSERT(not(v) == true);
+    TEST_ASSERT(not(v) == false);
     TEST_ASSERT(pair(v) == false);
     TEST_ASSERT(is_list(v) == true);
     free_value(v);

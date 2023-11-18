@@ -7,19 +7,20 @@
 
 #define intern intern_string_null_terminated
 
-#define CHECK_OPERAND(c, tst, op, msg)        \
-  if (!tst)                                   \
-  {                                           \
-    printf("operand (");                      \
-    print_value(op);                          \
-    printf(") failed check: %s\n", msg);      \
-    crisp_eval_error(crisp, "Check Operand"); \
-    return NULL;                              \
+#define CHECK_OPERAND(c, tst, op, msg)               \
+  if (!tst)                                          \
+  {                                                  \
+    printf("operand '");                             \
+    print_value(op);                                 \
+    printf("' failed check: %s\n", msg);             \
+    crisp_eval_error(crisp, "Operand check failed"); \
+    return NULL;                                     \
   }
 
 #define CHECK_ARITY(c, ops, sz)                         \
   size_t len = length(ops);                             \
-  if (len != sz) {                                      \
+  if (len != sz)                                        \
+  {                                                     \
     printf("Expected arity of %u, got %zu\n", sz, len); \
     crisp_eval_error(crisp, "Arity");                   \
   }
@@ -50,7 +51,7 @@ static expr_t b_binary_numerical(crisp_t *crisp, expr_t operands, env_t *env, bi
   list_iter_t iter = iter_list(crisp, crisp_eval_list(crisp, operands, env));
   expr_t operand = NULL;
 
-  while ((operand = iter_next(&iter)))
+  while ((operand = iter_next(&iter)) != NULL)
   {
     CHECK_OPERAND(crisp, is_number(operand), operand, "Must be a number");
     if (first)
@@ -113,7 +114,8 @@ static expr_t b_length(crisp_t *crisp, expr_t operands, env_t *env)
   CHECK_ARITY(crisp, ops, 1U);
   ops = car(ops);
 
-  if(is_nil(ops)) return number_value(0.0);
+  if (is_nil(ops))
+    return number_value(0.0);
   CHECK_OPERAND(crisp, pair(ops), ops, "must be a list");
 
   return number_value((double)length(ops));

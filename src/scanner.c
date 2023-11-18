@@ -260,14 +260,15 @@ static void skip_whitespace()
 
 static token_t make_string()
 {
-  bool keepLooping = true;
+  bool keep_looping = true;
   bool escaped = false;
+  bool found_end = false;
 
-  while (keepLooping)
+  while (keep_looping)
   {
     if (is_at_end())
     {
-      keepLooping = false;
+      keep_looping = false;
     }
     else
     {
@@ -279,7 +280,8 @@ static token_t make_string()
       else if (peek() == '"')
       {
         // Found an unescaped end of string
-        keepLooping = false;
+        keep_looping = false;
+        found_end = true;
       }
       else if (peek() == '\\')
       {
@@ -292,7 +294,7 @@ static token_t make_string()
     }
   }
 
-  if (is_at_end())
+  if (!found_end)
     return error_token("Unterminated string.");
 
   return make_token(TOKEN_STRING);
