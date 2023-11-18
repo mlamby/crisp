@@ -136,7 +136,7 @@ void hash_table_dump_keys(hash_table_t *table)
     hash_table_entry_t *e = &(table->entries[i]);
     if (NULL != e->key)
     {
-      printf("[idx:%zu] <%p>'%s'\n", i, e->key, e->key);
+      printf("[idx:%zu] <%p>'%s'\n", i, (void*)e->key, e->key);
     }
   }
 }

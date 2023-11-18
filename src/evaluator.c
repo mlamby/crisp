@@ -84,7 +84,7 @@ static expr_t resolve_atom(crisp_t *crisp, expr_t node, env_t *env)
   if (!env_get(env, name, &value))
   {
     dump_env(env);
-    crisp_eval_error(crisp, "Failed to resolve atom: <%p>%s", name, name);
+    crisp_eval_error(crisp, "Failed to resolve atom: <%p>%s", (void*)name, name);
     return NULL;
   }
   return value;
