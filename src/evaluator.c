@@ -54,6 +54,14 @@ expr_t crisp_eval_list(crisp_t *crisp, expr_t list_node, env_t *env)
     crisp_eval_list(crisp, cdr(list_node), env));
 }
 
+#ifndef _MSC_VER
+// Tell CLANG and GCC that the call to vprintf below
+// is made within a function that implements the behvaviour
+// of printf. Otherwise passing a non string literal as the
+// first argument of vprintf will raise a warning.
+// See: https://stackoverflow.com/a/20167541
+__attribute__((__format__ (__printf__, 2, 0)))
+#endif
 void crisp_eval_error(crisp_t* crisp, const char* fmt, ...)
 {
   (void)crisp;

@@ -134,7 +134,7 @@ int string_table_test()
 
     // Now both are in the table
     const char* v1 = string_table_store(&table, test_str + 12, 4);
-    printf("<%p>%s == <%p>%s\n", str1, str1, v1, v1);
+    printf("<%p>%s == <%p>%s\n", (void*)str1, str1, (void*)v1, v1);
     TEST_ASSERT(str1 == string_table_store(&table, test_str + 12, 4));
     TEST_ASSERT(str2 == string_table_store(&table, "key2", 4));
 
