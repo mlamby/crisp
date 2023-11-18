@@ -1,85 +1,15 @@
 #include "simple_test.h"
 
-#include "scanner.h"
-#include "parser.h"
-#include "value.h"
-#include "interpreter.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-
-int test_parse(const char* src, const char* expected, const char* file_name, int line, bool expect_parse_fail)
-{
-  crisp_t* crisp = init_interpreter();
-  FILE* fp = fopen("parse_test_output.txt", "wb");
-  expr_t v = parse(crisp, src);
-  print_value_to_fp(v, fp);
-  fclose(fp);
-
-  if(v == NULL)
-  {
-    if(expect_parse_fail)
-    {
-      free_interpreter(crisp);
-      return PASS_CODE;
-    }
-    else
-    {
-      printf("\n%s(%d): Test Fail\n", file_name, line);
-      printf("  : Parse fail: '%s'\n", src);
-      free_interpreter(crisp);
-      return FAIL_CODE;
-    }
-  }
-  else
-  {
-    if(expect_parse_fail)
-    {
-      printf("\n%s(%d): Test Fail\n", file_name, line);
-      printf("  : Expected parse to fail: '%s'\n", src);
-      free_interpreter(crisp);
-      return FAIL_CODE;
-    }
+#define TEST_PARSE(src, exp)                                   \
+  if (execute_crisp_code(src, exp, __FILE__, __LINE__,         \
+                         false, false, false) != PASS_CODE) {  \
+    return FAIL_CODE;                                          \
   }
 
-  fp = fopen("parse_test_output.txt", "rb");
-  fseek(fp, 0, SEEK_END);
-  size_t fsize = (size_t)ftell(fp);
-  fseek(fp, 0, SEEK_SET);
-
-  char *output = malloc(fsize + 1);
-  if(fread(output, fsize, 1, fp) != 1)
-  {
-    printf("fread error\n");
-    return FAIL_CODE;
-  }
-
-  output[fsize] = '\0';
-  fclose(fp);
-
-  int result = strcmp(output, expected);
-  if (result != 0)
-  {
-    printf("\n%s(%d): Test Fail\n", file_name, line);
-    printf("  : '%s' != '%s'\n", output, expected);
-    free_interpreter(crisp);
-    free(output);
-    return FAIL_CODE;
-  }
-
-  free_interpreter(crisp);
-  free(output);
-  return PASS_CODE;
-}
-
-#define TEST_PARSE(src, exp)                                    \
-  if (test_parse(src, exp, __FILE__, __LINE__, false) != PASS_CODE) {  \
-    return FAIL_CODE;                                           \
-  }
-
-#define TEST_PARSE_FAILURE(src)                                       \
-  if (test_parse(src, "", __FILE__, __LINE__, true) != PASS_CODE) {   \
-    return FAIL_CODE;                                                 \
+#define TEST_PARSE_FAILURE(src)                                \
+  if (execute_crisp_code(src, "", __FILE__, __LINE__,          \
+                         true, false, false) != PASS_CODE) {   \
+    return FAIL_CODE;                                          \
   }
 
 int main(int argc, char** argv)
@@ -113,6 +43,10 @@ int main(int argc, char** argv)
   // True false
   TEST_PARSE("(#t #f)", "(true false)");
   TEST_PARSE("(#T #F)", "(true false)");
+
+  // Strings
+  TEST_PARSE("\"one\"", "\"one\"");
+  TEST_PARSE("(\"one\")", "(\"one\")");
 
   // Abbreviations
   TEST_PARSE("'a", "(quote a)");

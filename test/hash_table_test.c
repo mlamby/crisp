@@ -116,6 +116,8 @@ int string_table_test()
     hash_table_t table;
     string_table_init(&table);
 
+    const char* test_str = "string with key1 and key2";
+
     // Add the first entry
     const char* str1 = string_table_store(&table, "key1", 4);
     TEST_ASSERT(NULL != str1);
@@ -127,11 +129,13 @@ int string_table_test()
     TEST_ASSERT(str1 == string_table_store(&table, "key1", 4));
 
     // Add the second value
-    const char* str2 = string_table_store(&table, "key2", 4);
+    const char* str2 = string_table_store(&table, test_str + 21, 4);
     TEST_ASSERT(2 == table.size);
 
     // Now both are in the table
-    TEST_ASSERT(str1 == string_table_store(&table, "key1", 4));
+    const char* v1 = string_table_store(&table, test_str + 12, 4);
+    printf("<%p>%s == <%p>%s\n", (void*)str1, str1, (void*)v1, v1);
+    TEST_ASSERT(str1 == string_table_store(&table, test_str + 12, 4));
     TEST_ASSERT(str2 == string_table_store(&table, "key2", 4));
 
     string_table_free(&table);

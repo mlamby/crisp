@@ -16,4 +16,8 @@ typedef struct value_t value_t;
 // expr_t is an alias for a value pointer.
 typedef value_t* expr_t;
 
+// Forward declaration of environment type
+// Defined in "environment.h
+typedef struct env_t env_t;
+
 #endif
