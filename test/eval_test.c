@@ -58,6 +58,7 @@ int test_builtin_type_evaluation()
   TEST_EVAL("()", "()");
   TEST_EVAL("'()", "()");
   TEST_EVAL("(list? ())", "true");
+  TEST_EVAL("(list? '(a b c))", "true");
   TEST_EVAL("(boolean? ())", "false");
   TEST_EVAL("(symbol? ())", "false");
   TEST_EVAL("(number? ())", "false");
@@ -66,6 +67,12 @@ int test_builtin_type_evaluation()
   TEST_EVAL("(length ())", "0");
   TEST_EVAL("(length '(1 2))", "2");
   TEST_EVAL("(length '('one 2 \"three\"))", "3");
+  TEST_EVAL("(list)","()");
+  TEST_EVAL("(list 1 2 3)", "(1 2 3)");
+
+  // Improper lists
+  TEST_EVAL("(list? '(a b . c))", "false");
+  TEST_EVAL_FAILURE("(length '(1 2 . 3))");
 
   return PASS_CODE;
 }
