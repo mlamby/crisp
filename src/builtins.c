@@ -123,13 +123,12 @@ static expr_t b_cdr(crisp_t *crisp, expr_t operands, env_t *env)
 
 static expr_t b_length(crisp_t *crisp, expr_t operands, env_t *env)
 {
-  expr_t ops = crisp_eval_list(crisp, operands, env);
-  CHECK_ARITY(crisp, ops, 1U);
-  ops = car(ops);
+  expr_t ops = eval_first_operand(crisp, operands, env);
 
   if (is_nil(ops))
     return number_value(0.0);
-  CHECK_OPERAND(crisp, pair(ops), ops, "must be a list");
+
+  CHECK_OPERAND(crisp, is_list(ops), ops, "must be a list");
 
   return number_value((double)length(ops));
 }
