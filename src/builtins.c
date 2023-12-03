@@ -25,6 +25,14 @@
     crisp_eval_error(crisp, "Arity");                   \
   }
 
+#define CHECK_MIN_ARITY(c, ops, sz)                             \
+  size_t len = length(ops);                                     \
+  if (sz > len)                                                 \
+  {                                                             \
+    printf("Expected minimum arity of %u, got %zu\n", sz, len); \
+    crisp_eval_error(crisp, "Min Arity");                       \
+  }
+
 static expr_t eval_first_operand(crisp_t *crisp, expr_t operands, env_t *env)
 {
   CHECK_ARITY(crisp, operands, 1U);
@@ -120,14 +128,14 @@ static expr_t b_length(crisp_t *crisp, expr_t operands, env_t *env)
   if (is_nil(ops))
     return number_value(0.0);
 
-  CHECK_OPERAND(crisp, is_list(ops), ops, "must be a list");
+  CHECK_OPERAND(crisp, is_proper_list(ops), ops, "must be a proper list");
 
   return number_value((double)length(ops));
 }
 
 static expr_t b_is_list(crisp_t *crisp, expr_t operands, env_t *env)
 {
-  return bool_value(is_list(eval_first_operand(crisp, operands, env)));
+  return bool_value(is_proper_list(eval_first_operand(crisp, operands, env)));
 }
 
 static expr_t b_not(crisp_t *crisp, expr_t operands, env_t *env)
@@ -155,6 +163,13 @@ static expr_t b_string(crisp_t *crisp, expr_t operands, env_t *env)
   return bool_value(is_string(eval_first_operand(crisp, operands, env)));
 }
 
+static expr_t b_lambda(crisp_t *crisp, expr_t operands, env_t *env)
+{
+  // This is a special form. The operands are not evalutated.
+  CHECK_MIN_ARITY(crisp, operands, 2U);
+  return lambda_value(crisp, car(operands), cdr(operands), env);
+}
+
 void register_builtins(crisp_t *crisp)
 {
   env_t *env = root_env(crisp);
@@ -174,4 +189,5 @@ void register_builtins(crisp_t *crisp)
   env_set(env, intern(crisp, "symbol?"), fn_value(&b_symbol));
   env_set(env, intern(crisp, "number?"), fn_value(&b_number));
   env_set(env, intern(crisp, "string?"), fn_value(&b_string));
+  env_set(env, intern(crisp, "lambda"), fn_value(&b_lambda));
 }

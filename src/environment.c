@@ -1,22 +1,30 @@
 #include "environment.h"
 #include "value.h"
+#include "memory.h"
 
-void env_init(env_t *env)
+env_t *env_init()
 {
+  env_t *env = ALLOCATE(env_t, 1);
   env->parent = NULL;
   hash_table_init(&env->table);
+  return env;
 }
 
-void env_init_child(env_t* env, env_t* parent)
+env_t *env_init_child(env_t *parent)
 {
-  env_init(env);
+  env_t *env = env_init();
   env->parent = parent;
+  return env;
 }
 
 void env_free(env_t *env)
 {
-  env->parent = NULL;
-  hash_table_free(&env->table);
+  if(env != NULL)
+  {
+    env->parent = NULL;
+    hash_table_free(&env->table);
+    FREE(env_t, env);
+  }
 }
 
 bool env_get(env_t *env, const char *name, value_t **value)
@@ -36,7 +44,7 @@ void env_set(env_t *env, const char *name, value_t *value)
   hash_table_set(&env->table, name, value);
 }
 
-void dump_env(env_t* env)
+void dump_env(env_t *env)
 {
   printf("Local Frame:\n");
   hash_table_dump_keys(&env->table);

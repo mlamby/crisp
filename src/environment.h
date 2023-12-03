@@ -10,8 +10,8 @@ struct env_t
   env_t* parent;
 };
 
-void env_init(env_t* env);
-void env_init_child(env_t* env, env_t* parent);
+env_t* env_init();
+env_t* env_init_child(env_t* parent);
 void env_free(env_t* env);
 
 bool env_get(env_t* env, const char* name, value_t** value);

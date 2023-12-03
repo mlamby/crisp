@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 static expr_t apply(crisp_t *crisp, expr_t operator, expr_t operands, env_t *env);
+static expr_t apply_lambda(crisp_t *crisp, lambda_t *lambda, expr_t operands, env_t *env);
 static expr_t resolve_atom(crisp_t *crisp, expr_t node, env_t *env);
 
 expr_t crisp_eval(crisp_t *crisp, expr_t node, env_t *env)
@@ -28,7 +29,7 @@ expr_t crisp_eval(crisp_t *crisp, expr_t node, env_t *env)
 
   if (pair(node))
   {
-    if (is_list(node))
+    if (is_proper_list(node))
     {
       return apply(crisp, crisp_eval(crisp, car(node), env), cdr(node), env);
     }
@@ -44,14 +45,44 @@ expr_t crisp_eval(crisp_t *crisp, expr_t node, env_t *env)
 
 expr_t crisp_eval_list(crisp_t *crisp, expr_t list_node, env_t *env)
 {
-  if(is_nil(list_node))
+  if (is_nil(list_node))
   {
     return nil_value();
   }
 
   return cons(
-    crisp_eval(crisp, car(list_node), env),
-    crisp_eval_list(crisp, cdr(list_node), env));
+      crisp_eval(crisp, car(list_node), env),
+      crisp_eval_list(crisp, cdr(list_node), env));
+}
+
+void crisp_bind_env(crisp_t *crisp, env_t *env, expr_t keys, expr_t values)
+{
+  if (is_nil(keys))
+    return;
+
+  if (is_cons(keys))
+  {
+    if (is_atom(car(keys)))
+    {
+      if (is_cons(values))
+      {
+        env_set(env, as_atom(car(keys)), car(values));
+        crisp_bind_env(crisp, env, cdr(keys), cdr(values));
+      }
+      else
+      {
+        crisp_eval_error(crisp, "Insufficient number of parameters");
+      }
+    }
+    else
+    {
+      crisp_eval_error(crisp, "Formal arguments must be a atoms");
+    }
+  }
+  else if (is_atom(keys))
+  {
+    env_set(env, as_atom(keys), values);
+  }
 }
 
 #ifndef _MSC_VER
@@ -60,9 +91,10 @@ expr_t crisp_eval_list(crisp_t *crisp, expr_t list_node, env_t *env)
 // of printf. Otherwise passing a non string literal as the
 // first argument of vprintf will raise a warning.
 // See: https://stackoverflow.com/a/20167541
-__attribute__((__format__ (__printf__, 2, 0)))
+__attribute__((__format__(__printf__, 2, 0)))
 #endif
-void crisp_eval_error(crisp_t* crisp, const char* fmt, ...)
+void
+crisp_eval_error(crisp_t *crisp, const char *fmt, ...)
 {
   (void)crisp;
   printf("Eval Error: ");
@@ -80,9 +112,33 @@ static expr_t apply(crisp_t *crisp, expr_t operator, expr_t operands, env_t *env
   {
     return as_fn(operator)(crisp, operands, env);
   }
+  else if (is_lambda(operator))
+  {
+    return apply_lambda(crisp, as_lambda(operator), operands, env);
+  }
 
   crisp_eval_error(crisp, "Can not apply a non function");
   return NULL;
+}
+
+static expr_t apply_lambda(crisp_t *crisp, lambda_t *lambda, expr_t operands, env_t *env)
+{
+  expr_t node = NULL;
+  expr_t result = NULL;
+  expr_t evaluated_operands = crisp_eval_list(crisp, operands, env);
+
+  // Bind a new environment to the lambda parameters
+  env_t*  lambda_env = env_init_child(env);
+  crisp_bind_env(crisp, lambda_env, lambda->formals, evaluated_operands);
+
+  // Eval all the bodies and save the result of the last one.
+  list_iter_t iter = iter_list(crisp, lambda->bodies);
+  while ((node = iter_next(&iter)) != NULL)
+  {
+    result = crisp_eval(crisp, node, lambda_env);
+  }
+
+  return result;
 }
 
 static expr_t resolve_atom(crisp_t *crisp, expr_t node, env_t *env)
@@ -92,7 +148,7 @@ static expr_t resolve_atom(crisp_t *crisp, expr_t node, env_t *env)
   if (!env_get(env, name, &value))
   {
     dump_env(env);
-    crisp_eval_error(crisp, "Failed to resolve atom: <%p>%s", (void*)name, name);
+    crisp_eval_error(crisp, "Failed to resolve atom: <%p>%s", (void *)name, name);
     return NULL;
   }
   return value;

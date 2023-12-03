@@ -29,21 +29,21 @@ value_t *nil_value()
   return allocate_value(VALUE_TYPE_NIL);
 }
 
-value_t *string_value(crisp_t* crisp, const char *chars, size_t length)
+value_t *string_value(crisp_t *crisp, const char *chars, size_t length)
 {
   value_t *value = allocate_value(VALUE_TYPE_STRING);
   value->as.str = intern_string(crisp, chars, length);
   return value;
 }
 
-value_t *atom_value(crisp_t* crisp, const char *chars, size_t length)
+value_t *atom_value(crisp_t *crisp, const char *chars, size_t length)
 {
   value_t *value = allocate_value(VALUE_TYPE_ATOM);
   value->as.str = intern_string(crisp, chars, length);
   return value;
 }
 
-value_t *atom_value_null_terminated(crisp_t* crisp, const char *chars)
+value_t *atom_value_null_terminated(crisp_t *crisp, const char *chars)
 {
   return atom_value(crisp, chars, strlen(chars));
 }
@@ -52,6 +52,21 @@ value_t *fn_value(fn_ptr_t ptr)
 {
   value_t *value = allocate_value(VALUE_TYPE_FN);
   value->as.fn_ptr = ptr;
+  return value;
+}
+
+value_t *lambda_value(crisp_t *crisp, value_t *formals, value_t *bodies, env_t *env)
+{
+  (void)crisp;
+  
+  value_t *value = allocate_value(VALUE_TYPE_LAMBDA);
+  lambda_t *lambda = (lambda_t *)reallocate(NULL, 0, sizeof(lambda_t));
+  value->as.lambda = lambda;
+
+  lambda->formals = formals;
+  lambda->bodies = bodies;
+  lambda->env = env;
+
   return value;
 }
 
@@ -72,6 +87,11 @@ void free_value(value_t *value)
     free_value(value->as.cons.cdr);
     value->as.cons.cdr = NULL;
   }
+  else if(is_lambda(value))
+  {
+    reallocate(value->as.lambda, 0, 0);
+    value->as.lambda = NULL;
+  }
   reallocate(value, 0, 0);
 }
 
@@ -80,7 +100,7 @@ void print_value(value_t *value)
   print_value_to_fp(value, stdout);
 }
 
-void print_value_to_fp(value_t *value, FILE* fp)
+void print_value_to_fp(value_t *value, FILE *fp)
 {
   if (value == NULL)
   {
@@ -98,31 +118,36 @@ void print_value_to_fp(value_t *value, FILE* fp)
     else
       fprintf(fp, "false");
   }
-  else if(is_number(value))
+  else if (is_number(value))
   {
     fprintf(fp, "%g", as_number(value));
   }
-  else if(is_string(value))
+  else if (is_string(value))
   {
     fprintf(fp, "\"%s\"", as_string(value));
   }
-  else if(is_atom(value))
+  else if (is_atom(value))
   {
     fprintf(fp, "%s", as_atom(value));
   }
-  else if(is_fn(value))
+  else if (is_fn(value))
   {
     fprintf(fp, "<builtin>");
   }
-  else if(is_cons(value))
+  else if (is_lambda(value))
+  {
+    fprintf(fp, "<lambda>");
+  }
+  else if (is_cons(value))
   {
     fprintf(fp, "(");
-    while(true)
+    while (true)
     {
       print_value_to_fp(car(value), fp);
       value = cdr(value);
-      if(is_nil(value)) break;
-      if(is_cons(value))
+      if (is_nil(value))
+        break;
+      if (is_cons(value))
       {
         fprintf(fp, " ");
       }

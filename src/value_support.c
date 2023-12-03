@@ -1,9 +1,14 @@
 #include "value_support.h"
 #include "evaluator.h"
 
-bool is_list(expr_t value)
+bool is_proper_list(expr_t value)
 {
   return (is_nil(value)) || (length(value) > 0);
+}
+
+bool is_improper_list(expr_t value)
+{
+  return (is_cons(value) && (!is_proper_list(value)));
 }
 
 size_t length(expr_t value)
