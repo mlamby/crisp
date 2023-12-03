@@ -30,11 +30,13 @@ int main(int argc, char **argv)
     TEST_ASSERT(is_string(v) == false);
     TEST_ASSERT(is_atom(v) == false);
     TEST_ASSERT(is_cons(v) == false);
+    TEST_ASSERT(is_lambda(v) == false);
     TEST_ASSERT(is_fn(v) == false);
     TEST_ASSERT(as_bool(v) == true);
     TEST_ASSERT(not(v) == false);
     TEST_ASSERT(pair(v) == false);
-    TEST_ASSERT(is_list(v) == false);
+    TEST_ASSERT(is_proper_list(v) == false);
+    TEST_ASSERT(is_improper_list(v) == false);
     free_value(v);
   }
 
@@ -49,10 +51,12 @@ int main(int argc, char **argv)
     TEST_ASSERT(is_atom(v) == false);
     TEST_ASSERT(is_cons(v) == false);
     TEST_ASSERT(is_fn(v) == false);
+    TEST_ASSERT(is_lambda(v) == false);
     TEST_ASSERT(as_bool(v) == false);
     TEST_ASSERT(not(v) == true);
     TEST_ASSERT(pair(v) == false);
-    TEST_ASSERT(is_list(v) == false);
+    TEST_ASSERT(is_proper_list(v) == false);
+    TEST_ASSERT(is_improper_list(v) == false);
     free_value(v);
   }
 
@@ -66,9 +70,11 @@ int main(int argc, char **argv)
     TEST_ASSERT(is_atom(v) == false);
     TEST_ASSERT(is_cons(v) == false);
     TEST_ASSERT(is_fn(v) == false);
+    TEST_ASSERT(is_lambda(v) == false);
     TEST_ASSERT(not(v) == false);
     TEST_ASSERT(pair(v) == false);
-    TEST_ASSERT(is_list(v) == true);
+    TEST_ASSERT(is_proper_list(v) == true);
+    TEST_ASSERT(is_improper_list(v) == false);
     free_value(v);
   }
 
@@ -83,10 +89,12 @@ int main(int argc, char **argv)
     TEST_ASSERT(is_atom(v) == false);
     TEST_ASSERT(is_cons(v) == false);
     TEST_ASSERT(is_fn(v) == false);
+    TEST_ASSERT(is_lambda(v) == false);
     TEST_ASSERT(as_number(v) == 1.0);
     TEST_ASSERT(not(v) == false);
     TEST_ASSERT(pair(v) == false);
-    TEST_ASSERT(is_list(v) == false);
+    TEST_ASSERT(is_proper_list(v) == false);
+    TEST_ASSERT(is_improper_list(v) == false);
     free_value(v);
   }
 
@@ -100,11 +108,13 @@ int main(int argc, char **argv)
     TEST_ASSERT(is_atom(v) == false);
     TEST_ASSERT(is_cons(v) == false);
     TEST_ASSERT(is_fn(v) == false);
+    TEST_ASSERT(is_lambda(v) == false);
     TEST_ASSERT(strcmp("hello", as_string(v)) == 0);
     TEST_ASSERT(strlen(as_string(v)) == 5);
     TEST_ASSERT(not(v) == false);
     TEST_ASSERT(pair(v) == false);
-    TEST_ASSERT(is_list(v) == false);
+    TEST_ASSERT(is_proper_list(v) == false);
+    TEST_ASSERT(is_improper_list(v) == false);
     free_value(v);
   }
 
@@ -118,11 +128,13 @@ int main(int argc, char **argv)
     TEST_ASSERT(is_atom(v) == true);
     TEST_ASSERT(is_cons(v) == false);
     TEST_ASSERT(is_fn(v) == false);
+    TEST_ASSERT(is_lambda(v) == false);
     TEST_ASSERT(strcmp(":x", as_atom(v)) == 0);
     TEST_ASSERT(strlen(as_atom(v)) == 2);
     TEST_ASSERT(not(v) == false);
     TEST_ASSERT(pair(v) == false);
-    TEST_ASSERT(is_list(v) == false);
+    TEST_ASSERT(is_proper_list(v) == false);
+    TEST_ASSERT(is_improper_list(v) == false);
     free_value(v);
   }
 
@@ -136,12 +148,13 @@ int main(int argc, char **argv)
     TEST_ASSERT(is_atom(v) == false);
     TEST_ASSERT(is_cons(v) == true);
     TEST_ASSERT(is_fn(v) == false);
-
+    TEST_ASSERT(is_lambda(v) == false);
     TEST_ASSERT(is_bool(car(v)) == true);
     TEST_ASSERT(is_nil(cdr(v)) == true);
     TEST_ASSERT(not(v) == false);
     TEST_ASSERT(pair(v) == true);
-    TEST_ASSERT(is_list(v) == true);
+    TEST_ASSERT(is_proper_list(v) == true);
+    TEST_ASSERT(is_improper_list(v) == false);
     free_value(v);
   }
 
@@ -156,13 +169,15 @@ int main(int argc, char **argv)
     TEST_ASSERT(is_atom(v) == false);
     TEST_ASSERT(is_cons(v) == false);
     TEST_ASSERT(is_fn(v) == true);
-
+    TEST_ASSERT(is_lambda(v) == false);
+    
     value_t* r = as_fn(v)(NULL, number_value(1), NULL);
     TEST_ASSERT(as_number(r) == 123.0);
     TEST_ASSERT(as_number(captured) == 1.0);
     TEST_ASSERT(not(v) == false);
     TEST_ASSERT(pair(v) == false);
-    TEST_ASSERT(is_list(v) == false);
+    TEST_ASSERT(is_proper_list(v) == false);
+    TEST_ASSERT(is_improper_list(v) == false);
 
     free_value(v);
   }

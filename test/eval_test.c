@@ -14,6 +14,7 @@
 
 int test_builtin_type_evaluation();
 int test_math_evaluation();
+int test_lambda_evaluation();
 
 int main(int argc, char **argv)
 {
@@ -22,6 +23,7 @@ int main(int argc, char **argv)
 
   RUN_TEST(test_builtin_type_evaluation);
   RUN_TEST(test_math_evaluation);
+  RUN_TEST(test_lambda_evaluation);
 
   return PASS_CODE;
 }
@@ -66,6 +68,9 @@ int test_builtin_type_evaluation()
   TEST_EVAL("(length ())", "0");
   TEST_EVAL("(length '(1 2))", "2");
   TEST_EVAL("(length '('one 2 \"three\"))", "3");
+  TEST_EVAL("(list 'a 'b 'c)", "(a b c)");
+  TEST_EVAL("(list 'a)", "(a)");
+  TEST_EVAL("(list)", "()");
 
   return PASS_CODE;
 }
@@ -87,6 +92,25 @@ int test_math_evaluation()
   TEST_EVAL("(/ (- (+ 515 (* 87 311)) 302) 27)", "1010");
   TEST_EVAL("(* -3 6)", "-18");
   TEST_EVAL("(/ (- (+ 515 (* -87 311)) 296) 27)", "-994");
+
+  return PASS_CODE;
+}
+
+int test_lambda_evaluation()
+{
+  // Tests from The Scheme Programming Language
+  // https://www.scheme.com/tspl4/binding.html#./binding
+  TEST_EVAL("(lambda (x) (+ x 3))", "<lambda>");
+  TEST_EVAL("((lambda (x) (+ x 3)) 7)", "10");
+  TEST_EVAL("((lambda (x) (+ x 3) (+ x 4)) 7)", "11"); // multiple lambda bodies
+  TEST_EVAL("((lambda (x y) (* x (+ x y))) 7 13)", "140");
+  TEST_EVAL("((lambda (f x) (f x x)) + 11)", "22");
+  TEST_EVAL("((lambda () (+ 3 4)))", "7");
+
+  TEST_EVAL("((lambda (x . y) (list x y)) 28 37)", "(28 (37))");
+  TEST_EVAL("((lambda (x . y) (list x y)) 28 37 47 28)", "(28 (37 47 28))");
+  TEST_EVAL("((lambda (x y . z) (list x y z)) 1 2 3 4)", "(1 2 (3 4))");
+  TEST_EVAL("((lambda x x) 7 13)", "(7 13)");
 
   return PASS_CODE;
 }

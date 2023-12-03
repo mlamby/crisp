@@ -13,7 +13,8 @@ typedef struct
 static inline bool not(expr_t value) { return is_bool(value) && !as_bool(value); }
 static inline bool pair(expr_t value) { return is_cons(value); }
 
-bool is_list(expr_t value);
+bool is_proper_list(expr_t value);
+bool is_improper_list(expr_t value);
 size_t length(expr_t value);
 
 // List iteration functions
