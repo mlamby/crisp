@@ -39,6 +39,7 @@
 #endif
 
 int execute_crisp_code(
+  crisp_t* crisp,
   const char* src, 
   const char* expected, 
   const char* file_name, 
@@ -46,3 +47,9 @@ int execute_crisp_code(
   bool expect_parse_fail,
   bool run_eval,
   bool expect_eval_fail);
+
+int compare_crisp_value(
+  expr_t value,
+  const char* expected,
+  const char* file_name, 
+  int line);

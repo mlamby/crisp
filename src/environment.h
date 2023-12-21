@@ -12,6 +12,9 @@ struct env_t
 
 env_t* env_init();
 env_t* env_init_child(env_t* parent);
+bool env_is_top_level(env_t* env);
+
+env_t* env_get_top_level(env_t* env);
 void env_free(env_t* env);
 
 bool env_get(env_t* env, const char* name, value_t** value);

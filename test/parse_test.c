@@ -1,16 +1,25 @@
 #include "simple_test.h"
+#include "interpreter.h"
 
 #define TEST_PARSE(src, exp)                                   \
-  if (execute_crisp_code(src, exp, __FILE__, __LINE__,         \
+  {                                                            \
+    crisp_t *crisp = init_interpreter();                       \
+    if (execute_crisp_code(crisp, src, exp, __FILE__, __LINE__,\
                          false, false, false) != PASS_CODE) {  \
-    return FAIL_CODE;                                          \
-  }
+      return FAIL_CODE;                                        \
+    }                                                          \
+  free_interpreter(crisp);                                     \
+}
 
 #define TEST_PARSE_FAILURE(src)                                \
-  if (execute_crisp_code(src, "", __FILE__, __LINE__,          \
+  {                                                            \
+    crisp_t *crisp = init_interpreter();                       \
+    if (execute_crisp_code(crisp, src, "", __FILE__, __LINE__, \
                          true, false, false) != PASS_CODE) {   \
-    return FAIL_CODE;                                          \
-  }
+      return FAIL_CODE;                                        \
+    }                                                          \
+  free_interpreter(crisp);                                     \
+}
 
 int main(int argc, char** argv)
 {

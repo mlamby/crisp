@@ -46,6 +46,16 @@ static int env_test(test_fixture_t* fixture)
   env_t* child = env_init_child(root);
   env_t* grand_child = env_init_child(child);
 
+  // Top level testing
+  TEST_ASSERT(env_is_top_level(root));
+  TEST_ASSERT(!env_is_top_level(child));
+  TEST_ASSERT(!env_is_top_level(grand_child));
+
+  // Top level (root) retrieval
+  TEST_ASSERT(env_get_top_level(root) == root);
+  TEST_ASSERT(env_get_top_level(child) == root);
+  TEST_ASSERT(env_get_top_level(grand_child) == root);
+
   // No values in the envs
   TEST_ASSERT(env_get(root, fixture->v1, &v) == false);
   TEST_ASSERT(env_get(root, fixture->v2, &v) == false);

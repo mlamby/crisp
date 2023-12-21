@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 int execute_crisp_code(
+    crisp_t* crisp,
     const char *src,
     const char *expected,
     const char *file_name,
@@ -15,21 +16,18 @@ int execute_crisp_code(
     bool expect_eval_fail)
 {
   (void)run_eval;
-  crisp_t *crisp = init_interpreter();
   expr_t v = read(crisp, src);
 
   if (v == NULL)
   {
     if (expect_parse_fail)
     {
-      free_interpreter(crisp);
       return PASS_CODE;
     }
     else
     {
       printf("\n%s(%d): Test Fail\n", file_name, line);
       printf("  : Parse fail: '%s'\n", src);
-      free_interpreter(crisp);
       return FAIL_CODE;
     }
   }
@@ -39,7 +37,6 @@ int execute_crisp_code(
     {
       printf("\n%s(%d): Test Fail\n", file_name, line);
       printf("  : Expected parse to fail: '%s'\n", src);
-      free_interpreter(crisp);
       return FAIL_CODE;
     }
   }
@@ -52,14 +49,12 @@ int execute_crisp_code(
     {
       if (expect_eval_fail)
       {
-        free_interpreter(crisp);
         return PASS_CODE;
       }
       else
       {
         printf("\n%s(%d): Test Fail\n", file_name, line);
         printf("  : Eval fail: '%s'\n", src);
-        free_interpreter(crisp);
         return FAIL_CODE;
       }
     }
@@ -69,15 +64,26 @@ int execute_crisp_code(
       {
         printf("\n%s(%d): Test Fail\n", file_name, line);
         printf("  : Expected eval to fail: '%s'\n", src);
-        free_interpreter(crisp);
         return FAIL_CODE;
       }
     }
   }
 
+  int result = compare_crisp_value(v, expected, file_name, line);
+  return result;
+}
+
+int compare_crisp_value(
+  expr_t value,
+  const char* expected,
+  const char* file_name, 
+  int line)
+{
+  int result = PASS_CODE;
+
   // Print the output to a file.
   FILE *fp = fopen("parse_test_output.txt", "wb");
-  print_value_to_fp(v, fp);
+  print_value_to_fp(value, fp);
   fclose(fp);
 
   // Read the file back in for comparison.
@@ -90,23 +96,22 @@ int execute_crisp_code(
   if (fread(output, fsize, 1, fp) != 1)
   {
     printf("fread error\n");
+    free(output);
+    fclose(fp);
     return FAIL_CODE;
   }
 
   output[fsize] = '\0';
   fclose(fp);
 
-  int result = strcmp(output, expected);
-  if (result != 0)
+  if (strcmp(output, expected) != 0)
   {
     printf("\n%s(%d): Test Fail\n", file_name, line);
     printf("  : '%s' != '%s'\n", output, expected);
-    free_interpreter(crisp);
-    free(output);
-    return FAIL_CODE;
+    result = FAIL_CODE;
   }
 
-  free_interpreter(crisp);
   free(output);
-  return PASS_CODE;
+
+  return result;
 }
