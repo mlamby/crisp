@@ -29,11 +29,12 @@ Unit tests can be executed using CTest.
  - Mathematical functions, `+`, `-`, etc.
  - A small set of built in functions, such as `list`, `list?`, `length`.
  - Building and evaluating lambda functions.
+ - Top level definitions using `define`.
 
 ## TODO
 
- - Definition of variables - lambdas can only be immediately invoked at
-   the moment.
+ - Local binding of variables via `let`.
+ - Abbreviated forms of lambda definitions via `define`.
  - Garbage collection. Nothing is reclaimed at the moment.
  - Syntactic extensions.
  - Lots of other things that I don't know I'm even missing yet.

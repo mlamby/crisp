@@ -17,6 +17,21 @@ env_t *env_init_child(env_t *parent)
   return env;
 }
 
+bool env_is_top_level(env_t* env)
+{
+  return (env->parent == NULL);
+}
+
+env_t* env_get_top_level(env_t* env)
+{
+  while(!env_is_top_level(env))
+  {
+    env = env->parent;
+  }
+
+  return env;
+}
+
 void env_free(env_t *env)
 {
   if(env != NULL)

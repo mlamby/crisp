@@ -1,34 +1,47 @@
 #include "simple_test.h"
+#include "interpreter.h"
 
 #define TEST_EVAL(src, exp)                                    \
-  if (execute_crisp_code(src, exp, __FILE__, __LINE__,         \
-                         false, true, false) != PASS_CODE) {   \
+  if (execute_crisp_code(fixture->crisp, src, exp,             \
+                        __FILE__, __LINE__,                    \
+                        false, true, false) != PASS_CODE) {    \
     return FAIL_CODE;                                          \
   }
 
 #define TEST_EVAL_FAILURE(src)                                 \
-  if (execute_crisp_code(src, "", __FILE__, __LINE__,          \
-                         false, true, true) != PASS_CODE) {    \
+  if (execute_crisp_code(fixture->crisp, src, "",              \
+                        __FILE__, __LINE__,                    \
+                        false, true, true) != PASS_CODE) {     \
     return FAIL_CODE;                                          \
   }
 
-int test_builtin_type_evaluation();
-int test_math_evaluation();
-int test_lambda_evaluation();
+typedef struct
+{
+  crisp_t *crisp;
+} test_fixture_t;
+
+static void setup(test_fixture_t *fixture);
+static void teardown(test_fixture_t *fixture);
+
+int test_builtin_type_evaluation(test_fixture_t *fixture);
+int test_math_evaluation(test_fixture_t *fixture);
+int test_lambda_evaluation(test_fixture_t *fixture);
+int test_top_level_defines(test_fixture_t *fixture);
 
 int main(int argc, char **argv)
 {
   (void)argc;
   (void)argv;
 
-  RUN_TEST(test_builtin_type_evaluation);
-  RUN_TEST(test_math_evaluation);
-  RUN_TEST(test_lambda_evaluation);
+  RUN_TEST_WITH_FIXTURE(test_builtin_type_evaluation);
+  RUN_TEST_WITH_FIXTURE(test_math_evaluation);
+  RUN_TEST_WITH_FIXTURE(test_lambda_evaluation);
+  RUN_TEST_WITH_FIXTURE(test_top_level_defines);
 
   return PASS_CODE;
 }
 
-int test_builtin_type_evaluation()
+int test_builtin_type_evaluation(test_fixture_t *fixture)
 {
   // Numbers
   TEST_EVAL("5", "5");
@@ -81,7 +94,7 @@ int test_builtin_type_evaluation()
   return PASS_CODE;
 }
 
-int test_math_evaluation()
+int test_math_evaluation(test_fixture_t *fixture)
 {  
   // math functions
   TEST_EVAL("(+ 1 2)", "3");
@@ -102,10 +115,10 @@ int test_math_evaluation()
   return PASS_CODE;
 }
 
-int test_lambda_evaluation()
+int test_lambda_evaluation(test_fixture_t *fixture)
 {
   // Tests from The Scheme Programming Language
-  // https://www.scheme.com/tspl4/binding.html#./binding
+  // https://www.scheme.com/tspl4/binding.htm
   TEST_EVAL("(lambda (x) (+ x 3))", "<lambda>");
   TEST_EVAL("((lambda (x) (+ x 3)) 7)", "10");
   TEST_EVAL("((lambda (x) (+ x 3) (+ x 4)) 7)", "11"); // multiple lambda bodies
@@ -119,4 +132,32 @@ int test_lambda_evaluation()
   TEST_EVAL("((lambda x x) 7 13)", "(7 13)");
 
   return PASS_CODE;
+}
+
+int test_top_level_defines(test_fixture_t *fixture)
+{
+  // Tests from The Scheme Programming Language
+  // https://www.scheme.com/tspl4/binding.html
+  TEST_EVAL("(define x 5)", "()");
+  TEST_EVAL("x", "5");
+
+  TEST_EVAL("(define f (lambda (x y) (* (+ x y) 2)))", "()");
+  TEST_EVAL("(f 5 4)", "18");
+
+  TEST_EVAL("(define sum-of-squares (lambda (x y) (+ (* x x) (* y y))))", "()");
+  TEST_EVAL("(sum-of-squares 5 4)", "41");
+
+  // Abbreviated lambdas are not supported.
+
+  return PASS_CODE;
+}
+
+static void setup(test_fixture_t *fixture)
+{
+  fixture->crisp = init_interpreter();
+}
+
+static void teardown(test_fixture_t *fixture)
+{
+  free_interpreter(fixture->crisp);
 }

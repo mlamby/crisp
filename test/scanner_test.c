@@ -28,11 +28,12 @@ int main(int argc, char** argv)
   (void)argc;
   (void)argv;
   {
-    run_scanner("(+ \"abc\")");
+    run_scanner("(+ \"abc\") 5");
     TEST_ASSERT(NTT() == TOKEN_LEFT_PAREN);
     TEST_ASSERT(NTT() == TOKEN_IDENTIFIER);
     TEST_ASSERT(NTT() == TOKEN_STRING);
     TEST_ASSERT(NTT() == TOKEN_RIGHT_PAREN);
+    TEST_ASSERT(NTT() == TOKEN_NUMBER);
     TEST_ASSERT(NTT() == TOKEN_EOF);
   }
 

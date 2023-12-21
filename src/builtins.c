@@ -170,6 +170,33 @@ static expr_t b_lambda(crisp_t *crisp, expr_t operands, env_t *env)
   return lambda_value(crisp, car(operands), cdr(operands), env);
 }
 
+static expr_t b_define(crisp_t *crisp, expr_t operands, env_t *env)
+{
+  CHECK_MIN_ARITY(crisp, operands, 1U);
+
+  // Special form - the first operand is not evaluated but must be an atom.
+  expr_t key = car(operands);
+  CHECK_OPERAND(crisp, is_atom(key), key, "must be an atom");
+
+  // The unassigned value in crisp is nil.
+  expr_t value = nil_value();
+
+  // If a second operand is present, evaluate it as the value for the
+  // definition.
+  if (length(operands) == 2)
+  {
+    value = crisp_eval(crisp, car(cdr(operands)), env);
+  }
+  else
+  {
+    printf("Crisp does not support abbreviated lambdas.");
+    crisp_eval_error(crisp, "Unsupport form of define.");   
+  }
+
+  env_set(env_get_top_level(env), as_atom(key), value);
+  return nil_value();
+}
+
 void register_builtins(crisp_t *crisp)
 {
   env_t *env = root_env(crisp);
@@ -190,4 +217,5 @@ void register_builtins(crisp_t *crisp)
   env_set(env, intern(crisp, "number?"), fn_value(&b_number));
   env_set(env, intern(crisp, "string?"), fn_value(&b_string));
   env_set(env, intern(crisp, "lambda"), fn_value(&b_lambda));
+  env_set(env, intern(crisp, "define"), fn_value(&b_define));
 }
