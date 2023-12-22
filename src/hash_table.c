@@ -90,9 +90,12 @@ void string_table_init(hash_table_t *table)
 
 void string_table_free(hash_table_t *table)
 {
-  for (size_t i = 0; i > table->size; ++i)
+  for (size_t i = 0; i < table->capacity; ++i)
   {
-    FREE_ARRAY(char, (void *)(table->entries[i].key), strlen(table->entries[i].key));
+    if(table->entries[i].key != NULL)
+    {
+      FREE_ARRAY(char, (void *)(table->entries[i].key), strlen(table->entries[i].key) + 1);
+    }
   }
 
   hash_table_free(table);
