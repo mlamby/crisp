@@ -24,7 +24,7 @@ static FILE *memory_file = NULL;
 #define HEADER_SIZE sizeof(memory_header_t)
 #define ALLOC_SIZE(sz) (sz + HEADER_SIZE)
 #define SKIP_HEADER(p) ((void *)((char *)p + HEADER_SIZE))
-#define HEADER_ADDRESS(p) ((memory_header_t *)((char *)p - HEADER_SIZE))
+#define HEADER_ADDRESS(p) ((char *)p - HEADER_SIZE)
 
 static bool is_memory_logging_enabled();
 static void memory_end_logging(void);
@@ -40,7 +40,7 @@ void *reallocate(void *pointer, size_t old_size, size_t new_size, const char *fi
 
     if (is_memory_logging_enabled())
     {
-      tfree(HEADER_ADDRESS(pointer), old_size, file, line);
+      tfree((memory_header_t *)HEADER_ADDRESS(pointer), old_size, file, line);
       free(HEADER_ADDRESS(pointer));
     }
     else
