@@ -9,8 +9,16 @@
 
 #include <stdarg.h>
 #include <setjmp.h>
+#include <signal.h>
 
 static jmp_buf sJumpBuffer;
+static sig_atomic_t sSignal = 0;
+static bool sHandlerInstalled = false;
+
+void signal_handler(int signal)
+{
+  sSignal = signal;
+}
 
 struct crisp_t
 {
@@ -30,6 +38,12 @@ crisp_t *init_interpreter()
   crisp->handler_fn = NULL;
   crisp->handler_state = NULL;
   register_builtins(crisp);
+
+  if(!sHandlerInstalled)
+  {
+    signal(SIGINT, signal_handler);
+    sHandlerInstalled = true;
+  }
   return crisp;
 }
 
@@ -73,7 +87,7 @@ void repl(crisp_t *crisp)
   char line[1024];
 
   // Run the REPL loop
-  while (true)
+  while (sSignal == 0)
   {
     printf("\n> ");
 

@@ -7,11 +7,13 @@
 static const float sLoadFactor = 0.75;
 static const size_t sMinCapacity = 8;
 static const size_t sCapacityMultiplier = 2;
+static const char* TOMBSTONE = "TOMBSTONE";
 
-static uint32_t hash_string(const char *key, size_t length);
+static uint32_t hash_string(const char *key, size_t length, void* state);
 static void increase_capacity(hash_table_t *table, size_t new_capacity);
 static void increase_capacity_if_required(hash_table_t *table);
 static hash_table_entry_t *find_entry(
+  hash_table_t* table,
   hash_table_entry_t *entries,
   size_t capacity,
   const char *key,
@@ -21,10 +23,17 @@ static bool key_match(const char *key1, const char *key2, bool compare_string_co
 
 void hash_table_init(hash_table_t *table)
 {
+  hash_table_init_custom_hash(table, hash_string, NULL);
+}
+
+void hash_table_init_custom_hash(hash_table_t* table, hash_fn_t hash_fn, void* hash_state)
+{
   table->is_string_table = false;
   table->capacity = 0;
   table->size = 0;
   table->entries = NULL;
+  table->hash_fn = hash_fn;
+  table->hash_fn_state = hash_state;
 }
 
 void hash_table_free(hash_table_t *table)
@@ -42,6 +51,7 @@ bool hash_table_set(hash_table_t *table, const char *key, VALUE_TYPE value)
   increase_capacity_if_required(table);
 
   hash_table_entry_t *e = find_entry(
+      table,
       table->entries,
       table->capacity,
       key,
@@ -68,6 +78,7 @@ bool hash_table_set(hash_table_t *table, const char *key, VALUE_TYPE value)
 bool hash_table_get(hash_table_t *table, const char *key, VALUE_TYPE *value)
 {
   hash_table_entry_t *e = find_entry(
+      table,
       table->entries,
       table->capacity,
       key,
@@ -82,6 +93,25 @@ bool hash_table_get(hash_table_t *table, const char *key, VALUE_TYPE *value)
   return found_key;
 }
 
+bool hash_table_delete(hash_table_t* table, const char* key)
+{
+  hash_table_entry_t *e = find_entry(
+      table,
+      table->entries,
+      table->capacity,
+      key,
+      false,
+      0);
+
+  bool found_key = (e != NULL) && (e->key != NULL);
+  if (found_key)
+  {
+    e->key = TOMBSTONE;
+    e->value = NULL;
+  }
+  return found_key;
+}
+
 void string_table_init(hash_table_t *table)
 {
   hash_table_init(table);
@@ -90,9 +120,12 @@ void string_table_init(hash_table_t *table)
 
 void string_table_free(hash_table_t *table)
 {
-  for (size_t i = 0; i > table->size; ++i)
+  for (size_t i = 0; i < table->capacity; ++i)
   {
-    FREE_ARRAY(char, (void *)(table->entries[i].key), strlen(table->entries[i].key));
+    if(table->entries[i].key != NULL)
+    {
+      FREE_ARRAY(char, (void *)(table->entries[i].key), strlen(table->entries[i].key) + 1);
+    }
   }
 
   hash_table_free(table);
@@ -103,6 +136,7 @@ const char *string_table_store(hash_table_t *table, const char *chars, size_t le
   increase_capacity_if_required(table);
 
   hash_table_entry_t *e = find_entry(
+      table,
       table->entries,
       table->capacity,
       chars,
@@ -141,8 +175,9 @@ void hash_table_dump_keys(hash_table_t *table)
   }
 }
 
-static uint32_t hash_string(const char *key, size_t length)
+static uint32_t hash_string(const char *key, size_t length, void* state)
 {
+  (void)state;
   // FNV-1a algorithm taken directly from
   // https://craftinginterpreters.com/hash-tables.html
   uint32_t hash = 2166136261u;
@@ -165,10 +200,11 @@ static void increase_capacity(hash_table_t *table, size_t new_capacity)
   for (size_t i = 0; i < table->capacity; ++i)
   {
     hash_table_entry_t *old_entry = &(table->entries[i]);
-    if (old_entry->key != NULL)
+    if ((old_entry->key != NULL) && (old_entry->key != TOMBSTONE))
     {
       // Find a spot in the new table for the entry
       hash_table_entry_t *new_slot = find_entry(
+          table,
           new_list,
           new_capacity,
           old_entry->key,
@@ -202,6 +238,7 @@ static void increase_capacity_if_required(hash_table_t *table)
 }
 
 static hash_table_entry_t *find_entry(
+    hash_table_t* table,
     hash_table_entry_t *entries,
     size_t capacity,
     const char *key,
@@ -217,7 +254,7 @@ static hash_table_entry_t *find_entry(
   {
     key_len = strlen(key);
   }
-  uint32_t hash = hash_string(key, key_len);
+  uint32_t hash = table->hash_fn(key, key_len, table->hash_fn_state);
   size_t index = hash % capacity;
 
   bool searching = true;

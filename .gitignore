@@ -55,3 +55,6 @@ dkms.conf
 build/
 
 .vscode
+
+# Crisp memory dumps
+crisp.mem.txt

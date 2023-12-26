@@ -60,7 +60,7 @@ value_t *lambda_value(crisp_t *crisp, value_t *formals, value_t *bodies, env_t *
   (void)crisp;
   
   value_t *value = allocate_value(VALUE_TYPE_LAMBDA);
-  lambda_t *lambda = (lambda_t *)reallocate(NULL, 0, sizeof(lambda_t));
+  lambda_t *lambda = ALLOCATE(lambda_t, 1);
   value->as.lambda = lambda;
 
   lambda->formals = formals;
@@ -89,10 +89,10 @@ void free_value(value_t *value)
   }
   else if(is_lambda(value))
   {
-    reallocate(value->as.lambda, 0, 0);
+    FREE(lambda_t, value->as.lambda);
     value->as.lambda = NULL;
   }
-  reallocate(value, 0, 0);
+  FREE(value_t, value);
 }
 
 void print_value(value_t *value)
@@ -164,7 +164,7 @@ void print_value_to_fp(value_t *value, FILE *fp)
 
 static value_t *allocate_value(value_type_t type)
 {
-  value_t *value = (value_t *)reallocate(NULL, 0, sizeof(value_t));
+  value_t *value = ALLOCATE(value_t, 1);
   value->type = type;
   return value;
 }
