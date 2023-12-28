@@ -2,7 +2,7 @@
 #include "evaluator.h"
 #include "environment.h"
 #include "value.h"
-#include "interpreter.h"
+#include "interpreter_internal.h"
 
 typedef struct
 {

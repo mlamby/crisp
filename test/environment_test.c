@@ -2,13 +2,14 @@
 
 #include "environment.h"
 #include "value.h"
+#include "interpreter_internal.h"
 
 typedef struct
 {
-  hash_table_t strings;
   const char* v1;
   const char* v2;
   const char* v3;
+  crisp_t* crisp;
 } test_fixture_t;
 
 
@@ -28,23 +29,23 @@ int main(int argc, char **argv)
 
 static void setup(test_fixture_t* fixture)
 {
-  string_table_init(&fixture->strings);
-  fixture->v1 = string_table_store(&fixture->strings, "v1", 2);
-  fixture->v2 = string_table_store(&fixture->strings, "v2", 2);
-  fixture->v3 = string_table_store(&fixture->strings, "v3", 2);
+  fixture->crisp = init_interpreter();
+  fixture->v1 = intern_string(fixture->crisp, "v1", 2);
+  fixture->v2 = intern_string(fixture->crisp, "v2", 2);
+  fixture->v3 = intern_string(fixture->crisp, "v3", 2);
 }
 
 static void teardown(test_fixture_t* fixture)
 {
-  string_table_free(&fixture->strings);
+  free_interpreter(fixture->crisp);
 }
 
 static int env_test(test_fixture_t* fixture)
 {
-  value_t *v = nil_value();
-  env_t* root = env_init();
-  env_t* child = env_init_child(root);
-  env_t* grand_child = env_init_child(child);
+  value_t *v = nil_value(fixture->crisp);
+  env_t* root = env_init(fixture->crisp);
+  env_t* child = env_init_child(fixture->crisp, root);
+  env_t* grand_child = env_init_child(fixture->crisp, child);
 
   // Top level testing
   TEST_ASSERT(env_is_top_level(root));
@@ -68,16 +69,16 @@ static int env_test(test_fixture_t* fixture)
   TEST_ASSERT(env_get(grand_child, fixture->v3, &v) == false);
 
   // Add some values to the root environment
-  env_set(root, fixture->v1, number_value(1.0));
-  env_set(root, fixture->v2, number_value(2.0));
-  env_set(root, fixture->v3, number_value(3.0));
+  env_set(root, fixture->v1, number_value(fixture->crisp, 1.0));
+  env_set(root, fixture->v2, number_value(fixture->crisp, 2.0));
+  env_set(root, fixture->v3, number_value(fixture->crisp, 3.0));
 
   // Shadow v2 and v3 in the child environment
-  env_set(child, fixture->v2, number_value(12.0));
-  env_set(child, fixture->v3, number_value(13.0));
+  env_set(child, fixture->v2, number_value(fixture->crisp, 12.0));
+  env_set(child, fixture->v3, number_value(fixture->crisp, 13.0));
 
   // Shadow v3 in the grand child environment
-  env_set(grand_child, fixture->v3, number_value(23.0));
+  env_set(grand_child, fixture->v3, number_value(fixture->crisp, 23.0));
 
   // All the values should be accessible through the root env.
   TEST_ASSERT(env_get(root, fixture->v1, &v) == true);
@@ -103,8 +104,5 @@ static int env_test(test_fixture_t* fixture)
   TEST_ASSERT(env_get(grand_child, fixture->v3, &v) == true);
   TEST_ASSERT(as_number(v) == 23.0);
 
-  env_free(grand_child);
-  env_free(child);
-  env_free(root);
   return PASS_CODE;
 }

@@ -1,5 +1,5 @@
 #include "simple_test.h"
-#include "interpreter.h"
+#include "interpreter_internal.h"
 
 #define TEST_PARSE(src, exp)                                   \
   {                                                            \

@@ -1,5 +1,5 @@
 #include "simple_test.h"
-#include "interpreter.h"
+#include "interpreter_internal.h"
 #include "value.h"
 
 #include <stdio.h>
@@ -83,7 +83,7 @@ int compare_crisp_value(
 
   // Print the output to a file.
   FILE *fp = fopen("parse_test_output.txt", "wb");
-  print_value_to_fp(value, fp);
+  print_value_tree_to_fp(value, fp);
   fclose(fp);
 
   // Read the file back in for comparison.
