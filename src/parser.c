@@ -1,7 +1,7 @@
 #include "parser.h"
 #include "value.h"
 #include "scanner.h"
-#include "interpreter.h"
+#include "interpreter_internal.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,11 +72,11 @@ static expr_t parse_form(crisp_t *crisp, token_t next)
     break;
 
   case TOKEN_TRUE:
-    result = bool_value(true);
+    result = bool_value(crisp, true);
     break;
 
   case TOKEN_FALSE:
-    result = bool_value(false);
+    result = bool_value(crisp, false);
     break;
 
   case TOKEN_APOSTROPHE:
@@ -130,7 +130,7 @@ static expr_t parse_list(crisp_t *crisp, bracket_type_t bt)
     }
     else
     {
-      return nil_value();
+      return nil_value(crisp);
     }
   }
 
@@ -159,7 +159,7 @@ static expr_t parse_list(crisp_t *crisp, bracket_type_t bt)
   else
   {
     // Return a normal list form.
-    result = cons(result, parse_list(crisp, bt));
+    result = cons(crisp, result, parse_list(crisp, bt));
   }
 
   return result;
@@ -187,16 +187,18 @@ static expr_t parse_number_atom(crisp_t *crisp, token_t token)
     return NULL;
   }
 
-  return number_value(value);
+  return number_value(crisp, value);
 }
 
 static expr_t parse_abbreviation(crisp_t *crisp, const char *symbol)
 {
   return cons(
+      crisp,
       atom_value_null_terminated(crisp, symbol),
       cons(
+          crisp,
           parse_form(crisp, scan_token()),
-          nil_value()));
+          nil_value(crisp)));
 }
 
 static bool is_list_end(token_type_t tt, bracket_type_t bt)

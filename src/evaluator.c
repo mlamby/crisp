@@ -1,7 +1,7 @@
 #include "evaluator.h"
 #include "value.h"
 #include "value_support.h"
-#include "interpreter.h"
+#include "interpreter_internal.h"
 #include "builtins.h"
 #include "environment.h"
 
@@ -47,10 +47,11 @@ expr_t crisp_eval_list(crisp_t *crisp, expr_t list_node, env_t *env)
 {
   if (is_nil(list_node))
   {
-    return nil_value();
+    return nil_value(crisp);
   }
 
   return cons(
+      crisp,
       crisp_eval(crisp, car(list_node), env),
       crisp_eval_list(crisp, cdr(list_node), env));
 }
@@ -128,7 +129,7 @@ static expr_t apply_lambda(crisp_t *crisp, lambda_t *lambda, expr_t operands, en
   expr_t evaluated_operands = crisp_eval_list(crisp, operands, env);
 
   // Bind a new environment to the lambda parameters
-  env_t*  lambda_env = env_init_child(env);
+  env_t*  lambda_env = env_init_child(crisp, env);
   crisp_bind_env(crisp, lambda_env, lambda->formals, evaluated_operands);
 
   // Eval all the bodies and save the result of the last one.

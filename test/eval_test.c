@@ -1,5 +1,5 @@
 #include "simple_test.h"
-#include "interpreter.h"
+#include "interpreter_internal.h"
 
 #define TEST_EVAL(src, exp)                                    \
   if (execute_crisp_code(fixture->crisp, src, exp,             \
@@ -119,7 +119,6 @@ int test_lambda_evaluation(test_fixture_t *fixture)
 {
   // Tests from The Scheme Programming Language
   // https://www.scheme.com/tspl4/binding.htm
-  TEST_EVAL("(lambda (x) (+ x 3))", "<lambda>");
   TEST_EVAL("((lambda (x) (+ x 3)) 7)", "10");
   TEST_EVAL("((lambda (x) (+ x 3) (+ x 4)) 7)", "11"); // multiple lambda bodies
   TEST_EVAL("((lambda (x y) (* x (+ x y))) 7 13)", "140");

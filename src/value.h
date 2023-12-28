@@ -2,6 +2,7 @@
 #define CRISP_VALUE_H
 
 #include "common.h"
+#include "gc_type.h"
 
 typedef enum
 {
@@ -26,6 +27,7 @@ typedef struct
 
 struct value_t
 {
+  gc_object_t base;
   value_type_t type;
   union value_store
   {
@@ -63,16 +65,16 @@ static inline bool is_value_type(value_t const *const value, value_type_t t)
 #define as_fn(value) ((value)->as.fn_ptr)
 #define as_lambda(value) ((value)->as.lambda)
 
-value_t *bool_value(bool v);
-value_t *number_value(double v);
-value_t *nil_value();
+value_t *bool_value(crisp_t *crisp, bool v);
+value_t *number_value(crisp_t *crisp, double v);
+value_t *nil_value(crisp_t *crisp);
 value_t *string_value(crisp_t *crisp, const char *chars, size_t length);
 value_t *atom_value(crisp_t *crisp, const char *chars, size_t length);
 value_t *atom_value_null_terminated(crisp_t *crisp, const char *chars);
-value_t *fn_value(fn_ptr_t ptr);
+value_t *fn_value(crisp_t *crisp, fn_ptr_t ptr);
 value_t *lambda_value(crisp_t* crisp, value_t* formals, value_t* bodies, env_t* env);
+value_t *cons(crisp_t* crisp, value_t *car, value_t *cdr);
 
-value_t *cons(value_t *car, value_t *cdr);
 static inline value_t *car(value_t *cons)
 {
   return cons->as.cons.car;
@@ -83,9 +85,9 @@ static inline value_t *cdr(value_t *cons)
   return cons->as.cons.cdr;
 }
 
-void free_value(value_t *value);
-
 void print_value(value_t *value);
 void print_value_to_fp(value_t *value, FILE *fp);
+void print_value_tree(value_t *value);
+void print_value_tree_to_fp(value_t *value, FILE *fp);
 
 #endif
