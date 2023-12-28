@@ -30,13 +30,14 @@ Unit tests can be executed using CTest.
  - A small set of built in functions, such as `list`, `list?`, `length`.
  - Building and evaluating lambda functions.
  - Top level definitions using `define`.
+ - Mark and sweep garbage collector.
 
 ## TODO
 
  - Local binding of variables via `let`.
  - Abbreviated forms of lambda definitions via `define`.
- - Garbage collection. Nothing is reclaimed at the moment.
  - Syntactic extensions.
+ - Cleanup of unused entries in the string table via the GC.
  - Lots of other things that I don't know I'm even missing yet.
 
 ## References

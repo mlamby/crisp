@@ -122,11 +122,11 @@ void print_value_to_fp(value_t *value, FILE *fp)
   }
   else if (is_fn(value))
   {
-    fprintf(fp, "<builtin:%p>", (void*)value->as.fn_ptr);
+    fprintf(fp, "<builtin>");
   }
   else if (is_lambda(value))
   {
-    fprintf(fp, "<lambda:%p>", (void*)value->as.lambda);
+    fprintf(fp, "<lambda>");
   }
   else if (is_cons(value))
   {
