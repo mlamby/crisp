@@ -186,7 +186,7 @@ static void crisp_gc_mark_env(crisp_t *crisp, env_t* obj)
 
   ((gc_object_t*)obj)->marked = true;
   hash_table_t* t = &(obj->table);
-  for(int i = 0; i < t->capacity; i++)
+  for(size_t i = 0; i < t->capacity; i++)
   {
     if(t->entries[i].key != NULL)
     {
